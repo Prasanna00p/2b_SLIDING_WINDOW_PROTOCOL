@@ -14,38 +14,45 @@ Implementation of sliding window protocol
 Client.py
 
 ```
-
 import socket
-from datetime import datetime
- 
-s=socket.socket()
- 
-s.bind(('localhost',8080))
- 
+
+s = socket.socket()
+s.bind(('localhost', 8000))
 s.listen(5)
-c,addr=s.accept()
-print("Client Address : ",addr)
- 
-now = datetime.now()
- 
-c.send(now.strftime("%d/%m/%Y %H:%M:%S").encode())
-ack=c.recv(1024).decode()
- 
-if ack:
-    print(ack)
-c.close()
+c, addr = s.accept()
+
+size = int(input("Enter number of frames to send: "))
+l = list(range(size))
+s_win = int(input("Enter Window Size: "))
+
+st = 0
+i = 0
+
+while True:
+    while i < len(l):
+        st += s_win
+        c.send(str(l[i:st]).encode())
+        ack = c.recv(1024).decode()
+        if ack == "ack":
+            print("Acknowledgment received:", ack)
+            i += s_win
 
 
 ```
 Server.py
 
 ```
-import socket 
-s=socket.socket() 
-s.connect(('localhost',8080)) 
-print(s.getsockname()) 
-print(s.recv(1024).decode()) 
-s.send("acknowledgement recived from the server".encode()) 
+import socket
+import time
+
+s = socket.socket()
+s.connect(('localhost', 8000))
+
+while True:
+    msg = s.recv(1024).decode()
+    print("Received:", msg)
+    time.sleep(0.5)  # Prevents immediate loop, optional
+    s.send("ack".encode())
 ```
 
 ## OUPUT
